@@ -1,0 +1,27 @@
+--cpu Cortex-M3
+"r2bo\startup_stm32f103xb.o"
+"r2bo\main.o"
+"r2bo\stm32f1xx_it.o"
+"r2bo\stm32f1xx_hal_msp.o"
+"r2bo\stm32f1xx_hal_gpio_ex.o"
+"r2bo\stm32f1xx_hal_tim.o"
+"r2bo\stm32f1xx_hal_tim_ex.o"
+"r2bo\stm32f1xx_hal.o"
+"r2bo\stm32f1xx_hal_rcc.o"
+"r2bo\stm32f1xx_hal_rcc_ex.o"
+"r2bo\stm32f1xx_hal_gpio.o"
+"r2bo\stm32f1xx_hal_dma.o"
+"r2bo\stm32f1xx_hal_cortex.o"
+"r2bo\stm32f1xx_hal_pwr.o"
+"r2bo\stm32f1xx_hal_flash.o"
+"r2bo\stm32f1xx_hal_flash_ex.o"
+"r2bo\stm32f1xx_hal_exti.o"
+"r2bo\system_stm32f1xx.o"
+"r2bo\ps2.o"
+"r2bo\oled_data.o"
+"r2bo\oled.o"
+"r2bo\calculator.o"
+--strict --scatter "R2BO\R2BO.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "R2BO.map" -o R2BO\R2BO.axf

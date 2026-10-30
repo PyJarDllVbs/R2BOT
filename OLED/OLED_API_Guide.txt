@@ -1,0 +1,266 @@
+OLED 驱动接口调用指南
+====================
+
+适用文件
+--------
+OLED.c
+OLED.h
+OLED_Data.c
+OLED_Data.h
+
+当前驱动只支持可打印 ASCII 字符（0x20~0x7E）。
+不要在显示字符串中传入中文或其他多字节字符，它们会被跳过，不会显示。
+数字、英文字母、常用英文符号均可以正常显示。
+
+
+1. 坐标与字体
+--------------
+屏幕左上角为 (0, 0)。
+X 向右增大，范围 0~127。
+Y 向下增大，范围 0~63。
+
+OLED_8X16：
+    字符宽 8 像素，高 16 像素。
+
+OLED_6X8：
+    字符宽 6 像素，高 8 像素。
+
+注意：OLED_8X16 这个宏的值是 8，表示字符宽度；字体高度实际是 16。
+计算显示区域时不要把它误认为高度。
+
+
+2. 最基本的显示流程
+------------------
+除 OLED_Update() 和 OLED_UpdateArea() 外，显示函数通常只修改显存。
+写完后必须调用更新函数，屏幕才会变化。
+
+示例：
+
+    #include "OLED.h"
+
+    OLED_Init();                         /* 初始化屏幕 */
+
+    OLED_Clear();
+    OLED_ShowString(0, 0, "SYSTEM READY", OLED_8X16);
+    OLED_Update();                       /* 将整屏显存发送到 OLED */
+
+
+3. 常用接口
+------------
+初始化与刷新：
+
+    OLED_Init();
+    OLED_Update();
+    OLED_UpdateArea(X, Y, Width, Height);
+
+清屏与反转：
+
+    OLED_Clear();
+    OLED_ClearArea(X, Y, Width, Height);
+    OLED_Reverse();
+    OLED_ReverseArea(X, Y, Width, Height);
+
+字符与字符串：
+
+    OLED_ShowChar(X, Y, 'A', OLED_8X16);
+    OLED_ShowString(X, Y, "Hello", OLED_8X16);
+
+数字：
+
+    OLED_ShowNum(X, Y, 1234, 4, OLED_8X16);
+    OLED_ShowSignedNum(X, Y, -123, 3, OLED_8X16);
+    OLED_ShowHexNum(X, Y, 0xABCD, 4, OLED_8X16);
+    OLED_ShowBinNum(X, Y, 0x05, 8, OLED_8X16);
+    OLED_ShowFloatNum(X, Y, 12.34, 2, 2, OLED_8X16);
+
+格式化输出：
+
+    OLED_Printf(0, 32, OLED_8X16, "Count=%d", count);
+
+注意：OLED_Printf 内部使用 256 字节缓冲区，格式化后的内容不应过长。
+
+图像与绘图：
+
+    OLED_ShowImage(X, Y, Width, Height, Image);
+    OLED_DrawPoint(X, Y);
+    OLED_DrawLine(X0, Y0, X1, Y1);
+    OLED_DrawRectangle(X, Y, Width, Height, OLED_UNFILLED);
+    OLED_DrawTriangle(X0, Y0, X1, Y1, X2, Y2, OLED_FILLED);
+    OLED_DrawCircle(X, Y, Radius, OLED_UNFILLED);
+    OLED_DrawEllipse(X, Y, A, B, OLED_UNFILLED);
+    OLED_DrawArc(X, Y, Radius, StartAngle, EndAngle, OLED_UNFILLED);
+
+
+4. 只修改屏幕上一处内容
+-----------------------
+核心方法是：
+
+    1. 清除该内容原来占据的整个矩形区域；
+    2. 在相同位置重新显示新内容；
+    3. 只刷新这个矩形区域。
+
+通用写法：
+
+    OLED_ClearArea(X, Y, Width, Height);
+    OLED_ShowString(X, Y, "new text", FontSize);
+    OLED_UpdateArea(X, Y, Width, Height);
+
+这里的“新内容”必须是 ASCII 字符。
+
+如果只清掉新字符串的长度，而旧字符串更长，旧字符会残留。
+因此推荐先把一个固定区域完整清除，再在这个区域中重新绘制。
+
+
+5. 修改一行状态文字的完整示例
+-----------------------------
+假设状态文字显示在：
+
+    X = 0
+    Y = 16
+    区域宽 = 64
+    区域高 = 16
+
+可以封装成：
+
+    #define STATUS_X       0
+    #define STATUS_Y       16
+    #define STATUS_WIDTH   64
+    #define STATUS_HEIGHT  16
+
+    void UpdateStatus(const char *status)
+    {
+        OLED_ClearArea(STATUS_X, STATUS_Y,
+                       STATUS_WIDTH, STATUS_HEIGHT);
+
+        OLED_ShowString(STATUS_X, STATUS_Y,
+                        status, OLED_8X16);
+
+        OLED_UpdateArea(STATUS_X, STATUS_Y,
+                        STATUS_WIDTH, STATUS_HEIGHT);
+    }
+
+第一次显示：
+
+    UpdateStatus("READY");
+
+之后需要修改这一处时：
+
+    UpdateStatus("ERROR");
+
+此后每次只调用 UpdateStatus() 即可。
+它只清除和刷新左上角 (0, 16)、大小 64x16 的区域，
+不会重写整个屏幕。
+
+状态没有变化时不要重复调用，避免无意义的 I2C 刷新。
+
+
+6. 修改一个数值
+---------------
+数值文字同样要先清除固定区域，再显示和刷新。
+
+例如显示 5 位十进制数，位置为 (0, 32)：
+
+    #define VALUE_X       0
+    #define VALUE_Y       32
+    #define VALUE_LEN     5
+    #define VALUE_WIDTH   (VALUE_LEN * OLED_8X16)
+    #define VALUE_HEIGHT  16
+
+    void UpdateValue(uint32_t value)
+    {
+        OLED_ClearArea(VALUE_X, VALUE_Y,
+                       VALUE_WIDTH, VALUE_HEIGHT);
+
+        OLED_ShowNum(VALUE_X, VALUE_Y,
+                     value, VALUE_LEN, OLED_8X16);
+
+        OLED_UpdateArea(VALUE_X, VALUE_Y,
+                        VALUE_WIDTH, VALUE_HEIGHT);
+    }
+
+调用：
+
+    UpdateValue(123);
+    UpdateValue(45678);
+
+如果数据每秒变化一次，就每秒调用一次 UpdateValue()。
+不要在主循环中无条件持续调用 OLED_Update()。
+
+
+7. 一次修改多个相邻内容
+-----------------------
+如果同一行中有“标签”和“数值”都发生变化，
+可以把它们合并成一个较大的区域统一清除和刷新：
+
+    OLED_ClearArea(0, 48, 96, 16);
+    OLED_ShowString(0, 48, "TEMP:", OLED_8X16);
+    OLED_ShowNum(48, 48, temperature, 3, OLED_8X16);
+    OLED_UpdateArea(0, 48, 96, 16);
+
+合并刷新通常比连续刷新多个小区域更高效。
+
+
+8. 区域参数的要求
+-----------------
+推荐保证：
+
+    X >= 0
+    Y >= 0
+    X + Width  <= 128
+    Y + Height <= 64
+
+Width 和 Height 必须覆盖内容的全部像素。
+对 OLED_8X16，每个字符占 8x16。
+对 OLED_6X8，每个字符占 6x8。
+
+OLED_UpdateArea() 会按 OLED 的页结构发送数据。
+如果刷新区域只覆盖某一页的一部分，
+硬件仍可能传输这一页中对应的连续数据，
+所以区域大小应覆盖实际内容，且不要超屏。
+
+
+9. 推荐的标准写法
+-----------------
+只改一处文字时：
+
+    OLED_ClearArea(X, Y, Width, Height);
+    OLED_ShowString(X, Y, text, FontSize);
+    OLED_UpdateArea(X, Y, Width, Height);
+
+只改一个数字时：
+
+    OLED_ClearArea(X, Y, Width, Height);
+    OLED_ShowNum(X, Y, value, Length, FontSize);
+    OLED_UpdateArea(X, Y, Width, Height);
+
+全屏内容都变化时：
+
+    OLED_Clear();
+
+    /* 在这里绘制全部新内容 */
+
+    OLED_Update();
+
+
+10. 常见问题
+------------
+问题：调用了显示函数，但屏幕没变化。
+原因：只修改了显存，没有调用更新函数。
+处理：调用 OLED_Update() 或 OLED_UpdateArea()。
+
+问题：修改短字符串后，旧字符仍在屏幕上。
+原因：没有清除旧内容的完整宽度。
+处理：先清除固定矩形区域，再显示新内容。
+
+问题：局部刷新后出现残影或上下区域异常。
+原因：刷新区域没有覆盖字符的完整高度或宽度。
+处理：OLED_8X16 使用 8x16 的区域；OLED_6X8 使用 6x8 的区域。
+
+问题：中文显示为空白或被跳过。
+原因：当前精简版驱动已移除中文字模和多字节解析。
+处理：只使用 ASCII 字符串；需要中文时应另行增加 GB2312 或 UTF-8
+      字模表和解析逻辑，并处理源文件编码。
+
+问题：刷新速度慢。
+原因：不必要地重复整屏刷新。
+处理：内容无变化时不刷新；只修改局部时使用 OLED_UpdateArea()。
