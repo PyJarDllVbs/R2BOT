@@ -46,7 +46,10 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
 /* USER CODE END EM */
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);

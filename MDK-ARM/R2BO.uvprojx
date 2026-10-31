@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xB</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;../PS2;../OLED;..\Calculator</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;../PS2;../OLED;../Calculator;..\Conductor</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -539,6 +539,21 @@
               <FileName>calculator.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Calculator\calculator.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Conductor</GroupName>
+          <Files>
+            <File>
+              <FileName>conductor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Conductor\conductor.c</FilePath>
+            </File>
+            <File>
+              <FileName>conductor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Conductor\conductor.h</FilePath>
             </File>
           </Files>
         </Group>

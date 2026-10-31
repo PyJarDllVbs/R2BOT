@@ -30,5 +30,6 @@ r2bo\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 r2bo\main.o: ../PS2/PS2.h
 r2bo\main.o: ../OLED/OLED.h
 r2bo\main.o: ../OLED/OLED_Data.h
-r2bo\main.o: ..\Calculator\calculator.h
+r2bo\main.o: ../Calculator/calculator.h
 r2bo\main.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+r2bo\main.o: ..\Conductor\conductor.h

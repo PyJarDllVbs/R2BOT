@@ -32,5 +32,5 @@ r2bo\oled.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 r2bo\oled.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 r2bo\oled.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 r2bo\oled.o: ../PS2/PS2.h
-r2bo\oled.o: ..\Calculator\calculator.h
+r2bo\oled.o: ../Calculator/calculator.h
 r2bo\oled.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h

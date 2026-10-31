@@ -24,6 +24,7 @@
 #include "PS2.h"
 #include "OLED.h"
 #include "calculator.h"
+#include "conductor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -103,6 +104,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   PS2_Init();
   OLED_Init();
+  PowerInit();
   HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
 
@@ -111,14 +113,15 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+    /* USER CODE BEGIN 3 */
     if(clap==1)
     {
       clap=0;
       PS2_Update();
       calculate();
-			stateshowcase();
+      push();
+      stateshowcase();
     }
-    /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
@@ -368,7 +371,7 @@ static void MX_TIM4_Init(void)
   htim4.Instance = TIM4;
   htim4.Init.Prescaler = 0;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 65535;
+  htim4.Init.Period = 7199;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
